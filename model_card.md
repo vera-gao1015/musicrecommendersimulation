@@ -1,111 +1,86 @@
 # 🎧 Model Card: Music Recommender Simulation
 
-## 1. Model Name  
+## 1. Model Name
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
-
----
-
-## 2. Intended Use  
-
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+**VibeFinder 1.0**
 
 ---
 
-## 3. How the Model Works  
+## 2. Intended Use
 
-Explain your scoring approach in simple language.  
+VibeFinder is designed to suggest songs from a small catalog based on what a user says they want right now — their favorite genre, mood, energy level, and whether they like acoustic sound.
 
-Prompts:  
+It is built for classroom exploration, not for real users. It assumes the user can describe their taste in simple terms. It does not learn from listening history or adapt over time.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
-
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+**Not intended for:** real music apps, large catalogs, or users with complex or mixed tastes.
 
 ---
 
-## 4. Data  
+## 3. How the Model Works
 
-Describe the dataset the model uses.  
+Every song in the catalog gets a score between 0 and 1. The score is built from six things the system checks:
 
-Prompts:  
+- **Genre** — does the song's genre match what the user likes? This is the most important factor.
+- **Mood** — does the song feel like the right vibe? Happy, chill, intense, sad, etc.
+- **Energy** — is the song as fast and intense as the user wants?
+- **Acoustic feel** — does the song sound acoustic or electronic, and does that match the user's preference?
+- **Tempo** — is the speed of the song close to what the user's energy level suggests?
+- **Emotional tone** — does the song feel positive or dark in the right way?
 
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
-
----
-
-## 5. Strengths  
-
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+Each check gives a small number. The system adds them all up with different weights — genre counts the most, tempo and emotional tone count the least. The songs with the highest totals are recommended.
 
 ---
 
-## 6. Limitations and Bias 
+## 4. Data
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+- The catalog has **20 songs** stored in a CSV file.
+- Songs cover a wide range of genres: lofi, pop, rock, jazz, metal, EDM, classical, hip hop, soul, reggae, funk, and more.
+- Moods include: happy, chill, intense, sad, relaxed, focused, romantic, dreamy, angry, and others.
+- The dataset was built by hand for this project — it is not based on real streaming data.
+- **Limits:** 20 songs is very small. Some genres only have one song, so users with niche tastes will always get weak results. Lyrics, artist popularity, and listening history are not included at all.
 
 ---
 
-## 7. Evaluation  
+## 5. Strengths
 
-How you checked whether the recommender behaved as expected. 
-
-Prompts:  
-
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
-
-No need for numeric metrics unless you created some.
+- Works well for users with clear, common preferences like "chill lofi" or "high-energy pop" — those profiles get strong, obvious matches at the top.
+- The reason labels ("matches your mood", "fits your acoustic preference") make it easy to understand why a song was recommended.
+- After fixing the genre and mood lookup tables, cross-genre suggestions improved — for example, indie pop now shows up for pop fans.
 
 ---
 
-## 8. Future Work  
+## 6. Limitations and Bias
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+The biggest weakness found during testing is that genre has too much power at 35%. When testing the Deep Intense Rock profile, `Storm Runner` scored 0.98 but every other song dropped to 0.67 or lower — not because they sound bad, but because their genre label is different. This means a rock fan will rarely see a high-energy EDM or hip hop song in their results, even if it would feel just as good. Genre works more like a wall than a preference, which keeps users stuck in the same genre every time. A better system would mix in some songs from nearby genres to keep things interesting.
 
 ---
 
-## 9. Personal Reflection  
+## 7. Evaluation
 
-A few sentences about your experience.  
+- **Which user profiles I tested:** Three profiles were tested — High-Energy Pop, Chill Lofi, and Deep Intense Rock.
 
-Prompts:  
+- **What I looked for in the recommendations:** Whether the top 5 songs felt like a natural fit for each profile, and whether the reasons made sense.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+- **What surprised me:** For Deep Intense Rock, `Storm Runner` scored 0.98 but the next song dropped to 0.67. One song dominated everything else, leaving very little variety. For Chill Lofi, a quiet acoustic jazz song scored only 0.50 even though it would feel right in a lofi playlist — it was hurt by the genre not matching.
+
+- **Any simple tests or comparisons I ran:** After fixing `RELATED_GENRES` to include more genre connections, `Rooftop Lights` jumped from #5 to #2 for the High-Energy Pop profile. This confirmed the fix worked and made results feel more realistic.
+
+---
+
+## 8. Future Work
+
+- **Lower the genre weight** from 35% to around 25% and spread the rest to mood and energy. This would stop genre from acting like a hard filter and let good-sounding songs from other genres show up.
+- **Add more songs to the catalog.** With only 20 songs, users with uncommon tastes like jazz or classical almost never get a strong match. A bigger catalog would make every profile feel more fairly served.
+- **Ask users to rate results.** Right now the system has no way to learn if its suggestions were good or bad. Even a simple thumbs up or down could help improve future recommendations.
+
+---
+
+## 9. Personal Reflection
+
+**Biggest learning moment:** The weights matter more than the code. Writing the scoring function was easy. Deciding how much genre should count compared to mood was the hard part. When genre was too high, one song would win by a lot and the rest felt like bad guesses. Getting the numbers right took more thinking than writing the actual code.
+
+**How AI tools helped, and when I needed to check:** AI helped build the lookup tables fast and caught the bug where moods like "sad" and "romantic" were in the CSV but the scoring logic did not know about them. But the results still needed a manual check. The numbers looked fine, but when I ran the profiles the results felt off. I had to look at the output and say "this does not feel right" before the problem became clear.
+
+**What surprised me about simple algorithms:** Just a few comparisons and some addition can feel like a real recommendation. When the Chill Lofi profile returned quiet acoustic tracks at the top, it almost felt personal — even though the system knows nothing about me. It was surprising how something so simple could feel smart.
+
+**What I would try next:** Let users give a thumbs up or down on each song, and use that to slowly adjust the weights over time. I would also try turning off the genre weight completely for one test to see if mood and energy alone are enough — that would show whether genre is actually helping or just getting in the way.

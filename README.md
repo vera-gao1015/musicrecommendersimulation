@@ -116,6 +116,10 @@ valence  ≥ 0.6  →  "emotional tone aligns with your taste"
 
 <img src="terminal.png" width="600" alt="Terminal Output">
 
+<img src="terminal2-1.png" width="600" alt="Terminal Output 2-1">
+
+<img src="terminal2-2.png" width="600" alt="Terminal Output 2-2">
+
 ---
 
 ## Getting Started
@@ -138,7 +142,7 @@ pip install -r requirements.txt
 3. Run the app:
 
 ```bash
-python -m src.main
+python src/main.py
 ```
 
 ### Running Tests
